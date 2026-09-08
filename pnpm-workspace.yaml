@@ -1,0 +1,5 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+# NOTE: the "mail crm" prototype is intentionally NOT a workspace member.
+# It stays as reference under ./mail crm.

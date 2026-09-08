@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Test / coverage
+coverage/
+
+# Drizzle generated (migrations are committed; meta journal kept)
+# (nothing ignored under packages/db/drizzle)
+
+# Local data volumes
+.data/
+
+# Prototype reference (kept on disk as reference, out of the repo)
+mail crm/
+mail crm.zip

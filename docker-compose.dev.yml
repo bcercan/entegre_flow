@@ -1,0 +1,76 @@
+# Local development stack. Brings up the stateful dependencies so the apps run
+# against real Postgres/Redis/MinIO. (Production on Coolify uses managed
+# Postgres/Redis — see docker-compose.yml.)
+#
+#   pnpm dev:up   → start    pnpm dev:down → stop
+name: entegreflow-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: entegreflow
+    ports:
+      # Host ports shifted (+1) to avoid clashing with other local projects.
+      - "5544:5432"
+    volumes:
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d entegreflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "no", "--save", ""]
+    ports:
+      - "6390:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    ports:
+      - "1026:1025" # SMTP (outbound capture)
+      - "8026:8025" # web UI
+
+  # Test IMAP+SMTP server for verifying the ingest pipeline (Mailpit has no IMAP).
+  greenmail:
+    image: greenmail/standalone:2.1.0
+    environment:
+      GREENMAIL_OPTS: "-Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.auth.disabled -Dgreenmail.users.login=email"
+    ports:
+      - "3126:3025" # SMTP
+      - "3243:3143" # IMAP
+      - "8180:8080" # REST API
+
+volumes:
+  pgdata:
+  miniodata:

@@ -1,0 +1,7 @@
+{
+  "extends": "@entegreflow/config/tsconfig/react-lib.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src"]
+}

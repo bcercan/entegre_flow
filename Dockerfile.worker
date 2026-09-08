@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1
+# ---- EntegreFlow Worker (NestJS standalone + BullMQ) -------------------------
+
+FROM node:22-slim AS base
+ENV PNPM_HOME=/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+WORKDIR /app
+
+FROM base AS builder
+COPY . .
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm build --filter @entegreflow/worker...
+RUN pnpm --filter @entegreflow/worker deploy --prod /app/deploy
+
+FROM node:22-slim AS runner
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=builder --chown=node:node /app/deploy ./
+USER node
+EXPOSE 3002
+CMD ["node", "dist/main.js"]

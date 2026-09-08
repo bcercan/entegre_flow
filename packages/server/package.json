@@ -1,0 +1,37 @@
+{
+  "name": "@entegreflow/server",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@entegreflow/contracts": "workspace:*",
+    "@entegreflow/core": "workspace:*",
+    "@entegreflow/db": "workspace:*",
+    "drizzle-orm": "^0.38.3",
+    "ioredis": "^5.4.2",
+    "zod": "^3.24.1"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0"
+  },
+  "devDependencies": {
+    "@entegreflow/config": "workspace:*",
+    "@nestjs/common": "^11.0.6",
+    "@types/node": "^22.10.5",
+    "eslint": "^9.17.0",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+.git
+.github
+.env
+.env.*
+!.env.example
+mail crm
+mail crm.zip
+*.log
+.DS_Store
+.data

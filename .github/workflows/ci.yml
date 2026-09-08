@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: entegreflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d entegreflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+
+    env:
+      DATABASE_URL: postgres://entegreflow_app:app_pw@localhost:5432/entegreflow
+      DATABASE_MIGRATION_URL: postgres://entegreflow_owner:owner_pw@localhost:5432/entegreflow
+      TEST_DATABASE_URL: postgres://entegreflow_app:app_pw@localhost:5432/entegreflow
+      TEST_DATABASE_MIGRATION_URL: postgres://entegreflow_owner:owner_pw@localhost:5432/entegreflow
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # ---- static gates -----------------------------------------------------
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Import firewall (cross-platform boundaries)
+        run: pnpm firewall
+      - name: Build
+        run: pnpm build
+
+      # ---- DB: roles + migrate-on-throwaway-PG + cross-tenant probe ----------
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Bootstrap DB roles + grants
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -d entegreflow -v ON_ERROR_STOP=1 -f infra/postgres/init.sql
+
+      - name: Apply migrations + RLS
+        run: pnpm db:migrate
+
+      - name: Tests (incl. live RLS cross-tenant probe)
+        run: pnpm test
