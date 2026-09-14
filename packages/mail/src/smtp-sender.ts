@@ -31,11 +31,20 @@ export class SmtpSender implements MailboxProvider {
     const info = await this.transport.sendMail({
       from: fmtAddr(msg.from),
       to: msg.to.map(fmtAddr).join(", "),
+      cc: msg.cc?.length ? msg.cc.map(fmtAddr).join(", ") : undefined,
+      bcc: msg.bcc?.length ? msg.bcc.map(fmtAddr).join(", ") : undefined,
       subject: msg.subject,
       text: msg.text,
       html: msg.html,
       inReplyTo: msg.inReplyTo ?? undefined,
       references: msg.references?.length ? msg.references.join(" ") : undefined,
+      attachments: msg.attachments?.length
+        ? msg.attachments.map((a) => ({
+            filename: a.filename,
+            content: a.content,
+            contentType: a.contentType,
+          }))
+        : undefined,
     });
     return { providerMessageId: info.messageId };
   }

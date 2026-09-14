@@ -1,0 +1,1 @@
+ALTER TABLE "email_messages" ADD COLUMN "is_flagged" boolean DEFAULT false NOT NULL;

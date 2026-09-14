@@ -51,7 +51,7 @@ export const emailMessageSchema = z.object({
 });
 export type EmailMessage = z.infer<typeof emailMessageSchema>;
 
-export const threadStatusSchema = z.enum(["inbox", "answered", "other"]);
+export const threadStatusSchema = z.enum(["inbox", "answered", "other", "deleted", "draft"]);
 export type ThreadStatus = z.infer<typeof threadStatusSchema>;
 
 export const emailThreadSchema = z.object({

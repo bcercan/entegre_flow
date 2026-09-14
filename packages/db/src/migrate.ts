@@ -9,12 +9,31 @@
  * least privilege by the RLS step.
  */
 /* eslint-disable no-console -- CLI script: stdout logging is intentional. */
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { buildRlsStatements } from "./rls";
+
+function loadEnv(): void {
+  if (typeof process.loadEnvFile !== "function") return;
+  let curr = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    const candidate = join(curr, ".env");
+    if (existsSync(candidate)) {
+      try {
+        process.loadEnvFile(candidate);
+      } catch {}
+      return;
+    }
+    const parent = dirname(curr);
+    if (parent === curr) break;
+    curr = parent;
+  }
+}
+loadEnv();
 
 const MIGRATION_LOCK_KEY = 947_201; // arbitrary, stable app-wide advisory lock id
 

@@ -1,4 +1,4 @@
-import type { AiStatus } from "@entegreflow/contracts";
+import type { AiStatus, ThreadStatus } from "@entegreflow/contracts";
 
 /** View-model for a row in the inbox list (thread + latest message, flattened). */
 export interface InboxItem {
@@ -10,7 +10,30 @@ export interface InboxItem {
   time: string;
   company: string;
   unread: boolean;
+  flagged: boolean;
+  pinned?: boolean;
   aiStatus: AiStatus;
+  threadStatus?: ThreadStatus;
+  /** Date bucket label for list grouping (e.g. "Bugün", "Bu Hafta"). */
+  group?: string;
+}
+
+/** An attachment shown in the reading pane. */
+export interface AttachmentView {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;
+}
+
+/** One message inside the reading pane's conversation view. */
+export interface ThreadMessageView {
+  id: string;
+  fromName: string;
+  fromEmail: string;
+  date: string;
+  bodyText: string;
+  outbound: boolean;
 }
 
 /** View-model for the opened message in the reading pane. */

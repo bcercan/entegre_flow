@@ -13,7 +13,7 @@ import {
 import { pk, timestamps, tenantId } from "./_shared";
 
 export const emailDirectionEnum = pgEnum("email_direction", ["inbound", "outbound"]);
-export const threadStatusEnum = pgEnum("thread_status", ["inbox", "answered", "other"]);
+export const threadStatusEnum = pgEnum("thread_status", ["inbox", "answered", "other", "deleted", "draft"]);
 export const aiStatusEnum = pgEnum("ai_status", [
   "none",
   "pending",
@@ -84,6 +84,7 @@ export const emailMessages = pgTable(
     bodyHtml: text("body_html"),
     receivedAt: timestamp("received_at", { withTimezone: true }).notNull(),
     isRead: boolean("is_read").notNull().default(false),
+    isFlagged: boolean("is_flagged").notNull().default(false),
     aiStatus: aiStatusEnum("ai_status").notNull().default("none"),
     ...timestamps,
   },

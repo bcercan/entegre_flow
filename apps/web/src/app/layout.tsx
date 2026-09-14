@@ -8,17 +8,10 @@ export const metadata: Metadata = {
     "Gelen teklif taleplerini yapay zekâ ile analiz eden, ERP entegre satış asistanı.",
 };
 
-const FONTS_HREF =
-  "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
-
+// Uses the native Segoe UI / system font stack (Outlook look) — no web fonts loaded.
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="tr" data-density="comfortable" data-dark="false">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="stylesheet" href={FONTS_HREF} />
-      </head>
+    <html lang="tr" data-density="comfortable" data-dark="true">
       <body>{children}</body>
     </html>
   );

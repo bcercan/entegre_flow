@@ -5,6 +5,8 @@
  * Money is stored in minor units (kuruş): TL value * 100.
  */
 /* eslint-disable no-console -- CLI script: stdout logging is intentional. */
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 import {
   EnvelopeCrypto,
   EnvKeyProvider,
@@ -14,6 +16,24 @@ import {
 import { and, eq } from "drizzle-orm";
 import { createDbClients } from "./client";
 import * as schema from "./schema";
+
+function loadEnv(): void {
+  if (typeof process.loadEnvFile !== "function") return;
+  let curr = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    const candidate = join(curr, ".env");
+    if (existsSync(candidate)) {
+      try {
+        process.loadEnvFile(candidate);
+      } catch {}
+      return;
+    }
+    const parent = dirname(curr);
+    if (parent === curr) break;
+    curr = parent;
+  }
+}
+loadEnv();
 
 const TL = (whole: number) => whole * 100;
 
@@ -162,20 +182,92 @@ async function main(): Promise<void> {
         ),
       );
 
-    const receivedAt = new Date("2026-06-13T09:42:00Z");
-    await db
-      .insert(schema.emailThreads)
-      .values({
-        id: DEMO_THREAD_ID,
-        tenantId: DEMO_TENANT_ID,
-        accountId: DEMO_ACCOUNT_ID,
-        subject: "Teklif Talebi — Şantiye KKD İhtiyacı (Acil)",
+    const [mavi] = await db
+      .select({ id: schema.customers.id })
+      .from(schema.customers)
+      .where(
+        and(
+          eq(schema.customers.tenantId, DEMO_TENANT_ID),
+          eq(schema.customers.erpCode, "120.01.0118"),
+        ),
+      );
+
+    const [demir] = await db
+      .select({ id: schema.customers.id })
+      .from(schema.customers)
+      .where(
+        and(
+          eq(schema.customers.tenantId, DEMO_TENANT_ID),
+          eq(schema.customers.erpCode, "120.01.0203"),
+        ),
+      );
+
+    const [ozkan] = await db
+      .select({ id: schema.customers.id })
+      .from(schema.customers)
+      .where(
+        and(
+          eq(schema.customers.tenantId, DEMO_TENANT_ID),
+          eq(schema.customers.erpCode, "120.01.0077"),
+        ),
+      );
+
+    const now = new Date();
+    const todayAt = new Date(now.getTime() - 2 * 3600 * 1000);
+    const yesterdayAt = new Date(now.getTime() - 26 * 3600 * 1000);
+    const thisWeekAt = new Date(now.getTime() - 3 * 86400 * 1000);
+    const olderThisWeekAt = new Date(now.getTime() - 5 * 86400 * 1000);
+
+    const demoThreads = [
+      {
+        threadId: DEMO_THREAD_ID,
+        messageId: DEMO_MESSAGE_ID,
         customerId: akca?.id ?? null,
-        status: "inbox",
-        lastMessageAt: receivedAt,
-        messageCount: 1,
-      })
-      .onConflictDoNothing();
+        subject: "Teklif Talebi — Şantiye KKD İhtiyacı (Acil)",
+        snippet: "Tuzla şantiyemiz için baret, eldiven ve çelik burunlu ayakkabı teklifi rica ederiz...",
+        fromName: "Mehmet Yılmaz",
+        fromEmail: "m.yilmaz@akcainsaat.com.tr",
+        receivedAt: todayAt,
+        isRead: false,
+        aiStatus: "pending" as const,
+      },
+      {
+        threadId: "00000000-0000-0000-0000-0000000000d2",
+        messageId: "00000000-0000-0000-0000-0000000000e2",
+        customerId: mavi?.id ?? null,
+        subject: "Tersane Bakım Ekipmanları ve Koruyucu Donanım Talebi",
+        snippet: "Tersanemiz için 200 adet baret ve 100 adet kaynakçı gözlüğü...",
+        fromName: "Mavi Tersane",
+        fromEmail: "satinalma@mavitersane.com",
+        receivedAt: yesterdayAt,
+        isRead: false,
+        aiStatus: "risk" as const,
+      },
+      {
+        threadId: "00000000-0000-0000-0000-0000000000d3",
+        messageId: "00000000-0000-0000-0000-0000000000e3",
+        customerId: demir?.id ?? null,
+        subject: "İş Güvenliği Malzemeleri Fiyat Teklifi",
+        snippet: "Merhabalar, ekte yer alan malzeme listesi için birim fiyat...",
+        fromName: "Burak Demir",
+        fromEmail: "burak.demir@demiryapi.com",
+        receivedAt: thisWeekAt,
+        isRead: false,
+        aiStatus: "ready" as const,
+      },
+      {
+        threadId: "00000000-0000-0000-0000-0000000000d4",
+        messageId: "00000000-0000-0000-0000-0000000000e4",
+        customerId: ozkan?.id ?? null,
+        subject: "Aylık KKD Sevkiyatı ve Baret Siparişi",
+        snippet: "Önümüzdeki ayın ilk haftası teslim edilmek üzere 3M baret...",
+        fromName: "Özkan Ticaret",
+        fromEmail: "siparis@ozkanendustriyel.com",
+        receivedAt: olderThisWeekAt,
+        isRead: true,
+        aiStatus: "info" as const,
+      },
+    ];
 
     const rfqBody = [
       "Merhaba,",
@@ -191,28 +283,58 @@ async function main(): Promise<void> {
       "İşe başlama tarihimiz yaklaştığı için ürünlere acil ihtiyacımız var.",
       "",
       "İyi çalışmalar,",
-      "Mehmet Yılmaz · Satınalma Sorumlusu · Akça İnşaat A.Ş.",
     ].join("\n");
 
-    await db
-      .insert(schema.emailMessages)
-      .values({
-        id: DEMO_MESSAGE_ID,
-        tenantId: DEMO_TENANT_ID,
-        threadId: DEMO_THREAD_ID,
-        accountId: DEMO_ACCOUNT_ID,
-        direction: "inbound",
-        messageId: "<akca-m1@akcainsaat.com.tr>",
-        from: { name: "Mehmet Yılmaz", address: "m.yilmaz@akcainsaat.com.tr" },
-        to: [{ name: "Satış", address: "satis@entegresafety.com" }],
-        subject: "Teklif Talebi — Şantiye KKD İhtiyacı (Acil)",
-        snippet: "Tuzla şantiyemiz için baret, eldiven ve çelik burunlu ayakkabı teklifi rica ederiz...",
-        bodyText: rfqBody,
-        receivedAt,
-        isRead: false,
-        aiStatus: "pending",
-      })
-      .onConflictDoNothing();
+    for (const t of demoThreads) {
+      await db
+        .insert(schema.emailThreads)
+        .values({
+          id: t.threadId,
+          tenantId: DEMO_TENANT_ID,
+          accountId: DEMO_ACCOUNT_ID,
+          subject: t.subject,
+          customerId: t.customerId,
+          status: "inbox",
+          lastMessageAt: t.receivedAt,
+          messageCount: 1,
+        })
+        .onConflictDoUpdate({
+          target: schema.emailThreads.id,
+          set: {
+            subject: t.subject,
+            lastMessageAt: t.receivedAt,
+            customerId: t.customerId,
+          },
+        });
+
+      await db
+        .insert(schema.emailMessages)
+        .values({
+          id: t.messageId,
+          tenantId: DEMO_TENANT_ID,
+          threadId: t.threadId,
+          accountId: DEMO_ACCOUNT_ID,
+          direction: "inbound",
+          messageId: `<${t.messageId}@entegreflow.local>`,
+          from: { name: t.fromName, address: t.fromEmail },
+          to: [{ name: "Satış", address: "satis@entegresafety.com" }],
+          subject: t.subject,
+          snippet: t.snippet,
+          bodyText: `${rfqBody}\n${t.fromName}`,
+          receivedAt: t.receivedAt,
+          isRead: t.isRead,
+          aiStatus: t.aiStatus,
+        })
+        .onConflictDoUpdate({
+          target: schema.emailMessages.id,
+          set: {
+            receivedAt: t.receivedAt,
+            isRead: t.isRead,
+            aiStatus: t.aiStatus,
+            snippet: t.snippet,
+          },
+        });
+    }
 
     // --- IMAP mailbox integration (GreenMail dev) with an ENCRYPTED credential -
     const kek = process.env.APP_ENCRYPTION_KEY;
@@ -266,15 +388,6 @@ async function main(): Promise<void> {
     }
 
     // --- sender → customer mapping (so ingested mail links to a cari) ---------
-    const [demir] = await db
-      .select({ id: schema.customers.id })
-      .from(schema.customers)
-      .where(
-        and(
-          eq(schema.customers.tenantId, DEMO_TENANT_ID),
-          eq(schema.customers.erpCode, "120.01.0203"),
-        ),
-      );
     if (demir) {
       await db
         .insert(schema.contactCustomerMap)
