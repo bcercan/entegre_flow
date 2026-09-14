@@ -1,6 +1,24 @@
-/* eslint-disable no-console -- dev script. */
-/** Enqueue a mailbox.sync for the demo account (the running worker consumes it). */
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { createJobsClient } from "@entegreflow/jobs";
+
+function loadEnv(): void {
+  if (typeof process.loadEnvFile !== "function") return;
+  let curr = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    const candidate = join(curr, ".env");
+    if (existsSync(candidate)) {
+      try {
+        process.loadEnvFile(candidate);
+      } catch {}
+      return;
+    }
+    const parent = dirname(curr);
+    if (parent === curr) break;
+    curr = parent;
+  }
+}
+loadEnv();
 
 const DEMO_TENANT_ID = "00000000-0000-0000-0000-0000000000a1";
 const DEMO_ACCOUNT_ID = "00000000-0000-0000-0000-0000000000c1";

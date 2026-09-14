@@ -44,6 +44,14 @@ export const envSchema = z.object({
 
   // How often the worker polls each active mailbox (repeatable mailbox.sync).
   MAILBOX_SYNC_INTERVAL_MS: z.coerce.number().int().positive().default(30_000),
+
+  // Object storage (attachments / quote PDFs). Dev = MinIO (localhost:9000).
+  S3_ENDPOINT: z.string().default("http://localhost:9000"),
+  S3_REGION: z.string().default("us-east-1"),
+  S3_BUCKET: z.string().default("entegreflow"),
+  S3_ACCESS_KEY: z.string().default("minioadmin"),
+  S3_SECRET_KEY: z.string().default("minioadmin"),
+  S3_FORCE_PATH_STYLE: z.coerce.boolean().default(true),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;
@@ -51,7 +59,30 @@ export type AppConfig = z.infer<typeof envSchema>;
 /** DI token for the validated config. */
 export const APP_CONFIG = Symbol("APP_CONFIG");
 
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+
+function loadRootEnv(): void {
+  if (typeof process.loadEnvFile !== "function") return;
+  let curr = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    const candidate = join(curr, ".env");
+    if (existsSync(candidate)) {
+      try {
+        process.loadEnvFile(candidate);
+      } catch {}
+      return;
+    }
+    const parent = dirname(curr);
+    if (parent === curr) break;
+    curr = parent;
+  }
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
+  if (!env.DATABASE_URL) {
+    loadRootEnv();
+  }
   const parsed = envSchema.safeParse(env);
   if (!parsed.success) {
     const issues = parsed.error.issues

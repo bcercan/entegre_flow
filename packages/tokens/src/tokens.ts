@@ -15,7 +15,7 @@ export const radii = {
 
 export const density = {
   comfortable: { pad: 16, padSm: 12, gap: 12, rowPy: 13, fz: 14, lh: 1.55 },
-  compact: { pad: 12, padSm: 9, gap: 9, rowPy: 9, fz: 13, lh: 1.5 },
+  compact: { pad: 10, padSm: 6, gap: 8, rowPy: 5, fz: 12.5, lh: 1.45 },
 } as const;
 
 export const fonts = {
@@ -56,6 +56,24 @@ export const colors = {
     danger: "#d1453b",
   },
 } as const;
+
+export type AccentColorId = "blue" | "purple" | "emerald" | "amber" | "rose" | "teal";
+
+export interface AccentOption {
+  id: AccentColorId;
+  label: string;
+  light: string;
+  dark: string;
+}
+
+export const accentColors: AccentOption[] = [
+  { id: "blue", label: "Mavi", light: "#0f6cbd", dark: "#479ef5" },
+  { id: "purple", label: "Mor", light: "#7c3aed", dark: "#a78bfa" },
+  { id: "emerald", label: "Zümrüt", light: "#059669", dark: "#34d399" },
+  { id: "amber", label: "Amber", light: "#d97706", dark: "#fbbf24" },
+  { id: "rose", label: "Gül", light: "#e11d48", dark: "#fb7185" },
+  { id: "teal", label: "Turkuaz", light: "#0891b2", dark: "#22d3ee" },
+];
 
 /** Accent presets surfaced as tenant-selectable options (from the prototype). */
 export const accentPresets = ["#2563eb", "#6d5ae6", "#0e9e8e", "#1f8a5b", "#c2410c"] as const;

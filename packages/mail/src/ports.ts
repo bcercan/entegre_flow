@@ -6,6 +6,8 @@ export interface MailAddress {
 export interface OutboundMessage {
   from: MailAddress;
   to: MailAddress[];
+  cc?: MailAddress[];
+  bcc?: MailAddress[];
   subject: string;
   text: string;
   html: string;
@@ -14,6 +16,7 @@ export interface OutboundMessage {
   references?: string[];
   /** Dedup key surfaced to the provider where supported. */
   idempotencyKey?: string;
+  attachments?: Array<{ filename: string; content: Buffer; contentType?: string }>;
 }
 
 export interface SendResult {

@@ -6,10 +6,30 @@
  *
  *   pnpm --filter @entegreflow/worker simulate
  */
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { createDbClients, schema } from "@entegreflow/db";
 import { createJobsClient } from "@entegreflow/jobs";
+
+function loadEnv(): void {
+  if (typeof process.loadEnvFile !== "function") return;
+  let curr = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    const candidate = join(curr, ".env");
+    if (existsSync(candidate)) {
+      try {
+        process.loadEnvFile(candidate);
+      } catch {}
+      return;
+    }
+    const parent = dirname(curr);
+    if (parent === curr) break;
+    curr = parent;
+  }
+}
+loadEnv();
 
 const DEMO_TENANT_ID = "00000000-0000-0000-0000-0000000000a1";
 const ACCOUNT_ID = "00000000-0000-0000-0000-0000000000c1"; // seeded email account

@@ -6,10 +6,11 @@
 
 :root {
   /* runtime-tunable (from JS / tenant settings) */
-  --accent: #2563eb;
-  --font: "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --r: 11px;
+  /* Outlook / Fluent brand blue */
+  --accent: #0f6cbd;
+  --font: "Segoe UI", "Segoe UI Variable", -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Cascadia Code", "IBM Plex Mono", ui-monospace, monospace;
+  --r: 6px;
 
   /* AI-specific fixed purple — kept distinct from data/accent */
   --ai: #6d5ae6;
@@ -35,8 +36,12 @@
   --border-strong: oklch(0.85 0.009 255);
   --text: oklch(0.27 0.012 262);
   --text-2: oklch(0.46 0.013 262);
-  --text-3: oklch(0.62 0.011 262);
+  --text-3: oklch(0.55 0.012 262);
   --text-inv: oklch(0.99 0 0);
+
+  /* Outlook chrome surfaces (light) */
+  --sidebar: oklch(0.978 0.003 255);  /* icon rail + folder pane */
+  --canvas: oklch(0.93 0.005 255);    /* padded area behind the panel card */
 
   --accent-weak: color-mix(in srgb, var(--accent) 10%, var(--surface));
   --accent-line: color-mix(in srgb, var(--accent) 28%, transparent);
@@ -55,28 +60,101 @@
 }
 
 [data-dark="true"] {
-  --bg: oklch(0.175 0.012 263);
-  --surface: oklch(0.215 0.014 264);
-  --surface-2: oklch(0.245 0.015 264);
-  --surface-3: oklch(0.285 0.017 264);
-  --surface-inset: oklch(0.2 0.013 264);
-  --border: oklch(0.32 0.016 264);
-  --border-soft: oklch(0.275 0.015 264);
-  --border-strong: oklch(0.42 0.02 264);
-  --text: oklch(0.955 0.005 255);
-  --text-2: oklch(0.78 0.012 258);
-  --text-3: oklch(0.62 0.014 260);
+  /* Outlook (new, macOS) dark — Fluent neutral greys, near-black chrome. */
+  --accent: #479ef5;            /* dark-mode accessible brand blue */
+  --bg: #1f1f1f;                /* reading-pane / app canvas */
+  --surface: #2b2b2b;           /* message list + cards */
+  --surface-2: #333333;
+  --surface-3: #3d3d3d;         /* hover */
+  --surface-inset: #262626;
+  --sidebar: #1b1b1b;           /* icon rail + folder pane */
+  --canvas: #141414;            /* padded area behind the panel card */
+  --border: #383838;
+  --border-soft: #303030;
+  --border-strong: #4d4d4d;
+  --text: #ffffff;
+  --text-2: #cfcdcb;
+  --text-3: #a8a6a4;
   --ai: #8b7bf0;
+  --accent-weak: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  --accent-line: color-mix(in srgb, var(--accent) 36%, transparent);
+  --accent-ink: color-mix(in srgb, var(--accent) 80%, white 20%);
+  --ok: #4ec98a;
+  --ok-weak: color-mix(in srgb, var(--ok) 16%, var(--surface));
+  --warn: #e0a44a;
+  --warn-weak: color-mix(in srgb, var(--warn) 16%, var(--surface));
+  --danger: #f1707b;
+  --danger-weak: color-mix(in srgb, var(--danger) 16%, var(--surface));
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
   --shadow-md: 0 6px 18px oklch(0 0 0 / 0.45);
   --shadow-lg: 0 20px 52px oklch(0 0 0 / 0.6);
 }
 
+
 [data-density="compact"] {
-  --pad: 12px;
-  --pad-sm: 9px;
-  --gap: 9px;
-  --row-py: 9px;
-  --fz: 13px;
-  --lh: 1.5;
+  --pad: 10px;
+  --pad-sm: 6px;
+  --gap: 8px;
+  --row-py: 5px;
+  --fz: 12.5px;
+  --lh: 1.45;
 }
+
+/* ============================================================
+   Accent Color Palette Themes
+   ============================================================ */
+
+/* Blue (Default) */
+[data-accent="blue"] {
+  --accent: #0f6cbd;
+}
+[data-dark="true"][data-accent="blue"],
+[data-dark="true"] [data-accent="blue"] {
+  --accent: #479ef5;
+}
+
+/* Purple */
+[data-accent="purple"] {
+  --accent: #7c3aed;
+}
+[data-dark="true"][data-accent="purple"],
+[data-dark="true"] [data-accent="purple"] {
+  --accent: #a78bfa;
+}
+
+/* Emerald */
+[data-accent="emerald"] {
+  --accent: #059669;
+}
+[data-dark="true"][data-accent="emerald"],
+[data-dark="true"] [data-accent="emerald"] {
+  --accent: #34d399;
+}
+
+/* Amber */
+[data-accent="amber"] {
+  --accent: #d97706;
+}
+[data-dark="true"][data-accent="amber"],
+[data-dark="true"] [data-accent="amber"] {
+  --accent: #fbbf24;
+}
+
+/* Rose */
+[data-accent="rose"] {
+  --accent: #e11d48;
+}
+[data-dark="true"][data-accent="rose"],
+[data-dark="true"] [data-accent="rose"] {
+  --accent: #fb7185;
+}
+
+/* Teal */
+[data-accent="teal"] {
+  --accent: #0891b2;
+}
+[data-dark="true"][data-accent="teal"],
+[data-dark="true"] [data-accent="teal"] {
+  --accent: #22d3ee;
+}
+
